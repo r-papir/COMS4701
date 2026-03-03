@@ -157,3 +157,22 @@ def write_output(state, nodes_expanded, max_depth, run_time, ram):
         f.write(f"max search depth: {max_depth}\n")
         f.write(f"running time: {run_time:.8f}\n")
         f.write(f"max ram usage: {ram:.8f}\n")
+
+if __name__ == '__main__':
+    method = sys.argv[1]
+    board = tuple(int(x) for x in sys.argv[2].split(','))
+
+    start_time = time.time()
+    start_ram = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+
+    if method == 'bfs':
+        state, nodes_expanded, max_depth = bfs(board)
+    elif method == 'dfs':
+        state, nodes_expanded, max_depth = dfs(board)
+    elif method == 'ast':
+        state, nodes_expanded, max_depth = aStar(board)
+
+    run_time = time.time() - start_time
+    ram = (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - start_ram) / (2**20)
+
+    write_output(state, nodes_expanded, max_depth, run_time, ram)
