@@ -41,6 +41,37 @@ def manhattan_distance(board):
         total += abs(goal_row - current_row) + abs(goal_column - current_column)
     return total
 
-# for i in row of grid
+def reconstruct_path(state):
+    moves = []
+    while state.parent is not None:
+        moves.append(state.move)
+        state = state.parent
+    return list(reversed(moves))
 
-# for i in column of grid
+def bfs(start_board):
+    start_state = PuzzleState(start_board)
+    frontier = deque([start_state])
+    frontier_set = {start_board}
+    explored = set()
+    nodes_expanded = 0
+    max_depth = 0
+
+    while frontier:
+        state = frontier.popleft()
+        frontier_set.discard(state.board)
+
+        if state.board == GOAL_STATE:
+            return state, nodes_expanded, max_depth
+
+        explored.add(state.board)
+        nodes_expanded += 1
+
+        for direction, new_board in state.get_neighbors():
+            if new_board not in explored and new_board not in frontier_set:
+                child = PuzzleState(new_board, parent=state, move=direction, depth=state.depth + 1)
+                frontier.append(child)
+                frontier_set.add(new_board)
+                if child.depth > max_depth:
+                    max_depth = child.depth
+
+    return None, nodes_expanded, max_depth
