@@ -104,7 +104,7 @@ def dfs(start_board):
 
     return None, nodes_expanded, max_depth
 
-def ast(start_board):
+def aStar(start_board):
     start_state = PuzzleState(start_board, cost=manhattan_distance(start_board))
     frontier = [(start_state.cost, 0, start_state)]
     frontier_dict = {start_board: start_state.cost}
@@ -142,3 +142,14 @@ def ast(start_board):
                     max_depth = child.depth
 
     return None, nodes_expanded, max_depth
+
+def write_output(state, nodes_expanded, max_depth, run_time, ram):
+    path = reconstruct_path(state)
+    with open('output.txt', 'w') as f:
+        f.write(f"path to goal: {path}\n")
+        f.write(f"cost of path: {len(path)}\n")
+        f.write(f"nodes expanded: {nodes_expanded}\n")
+        f.write(f"search depth: {state.depth}\n")
+        f.write(f"max search depth: {max_depth}\n")
+        f.write(f"running time: {run_time:.8f}\n")
+        f.write(f"max ram usage: {ram:.8f}\n")
