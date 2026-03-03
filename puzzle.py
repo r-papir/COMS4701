@@ -13,12 +13,12 @@ class PuzzleState():
     def get_neighbors(self):
         neighbors = []
         blank = board.index(0)
-        row, col = blank // 3, blank % 3
+        row, column = blank // 3, blank % 3
 
         if row > 0: neighbors.append(('Up', blank, blank - 3))
         if row < 2: neighbors.append(('Down', blank, blank + 3))
-        if col > 0: neighbors.append(('Left', blank, blank - 1))
-        if col < 2: neighbors.append(('Right', blank, blank + 1))
+        if column > 0: neighbors.append(('Left', blank, blank - 1))
+        if column < 2: neighbors.append(('Right', blank, blank + 1))
 
         result = []
         for direction, i, j in neighbors:
@@ -27,10 +27,19 @@ class PuzzleState():
             result.append((direction, tuple(new_board)))
 
         return result
+    
+    def __lt__(self, other):
+        return self.cost < other.cost
 
-
- #    [[A, B, C],[D, E, F],[G, H, I]]
-
+def manhattan_distance(board):
+    total = 0
+    for i, tile in enumerate(board):
+        if tile == 0:
+            continue
+        goal_row, goal_column = tile // 3, tile % 3
+        current_row, current_column = i // 3, i % 3
+        total += abs(goal_row - current_row) + abs(goal_column - current_column)
+    return total
 
 # for i in row of grid
 
