@@ -3,8 +3,14 @@
 
 class PuzzleState():
 
-    def get_neighbors(self):
+    def __init__(self, board, parent=None, move=None, depth=0, cost=0):
+        self.board = board
+        self.parent = parent
+        self.move = move
+        self.depth = depth
+        self.cost = cost
 
+    def get_neighbors(self):
         neighbors = []
         blank = board.index(0)
         row, col = blank // 3, blank % 3
