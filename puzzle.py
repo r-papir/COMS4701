@@ -1,8 +1,4 @@
-# https://gamescrafters.berkeley.edu/site-legacy-archive-sp20/games.php?puzzle=8puzzle
-
-
 class PuzzleState():
-
     def __init__(self, board, parent=None, move=None, depth=0, cost=0):
         self.board = board
         self.parent = parent
