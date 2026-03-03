@@ -1,178 +1,218 @@
+from __future__ import division
+from __future__ import print_function
+
 import sys
+import math
 import time
-import resource
+import queue as Q
 from collections import deque
 import heapq
+import resource
 
-Goal_State = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+#### SKELETON CODE ####
+## The Class that Represents the Puzzle
+class PuzzleState(object):
+    """
+        The PuzzleState stores a board configuration and implements
+        movement instructions to generate valid children.
+    """
+    def __init__(self, config, n, parent=None, action="Initial", cost=0, depth=0):
+        if n*n != len(config) or n < 2:
+            raise Exception("The length of config is not correct!")
+        
+        self.n        = n
+        self.cost     = cost
+        self.parent   = parent
+        self.action   = action
+        self.config   = config
+        self.depth    = depth
+        self.children = []
+        self.blank_index = self.config.index(0)
 
-class PuzzleState():
-    def __init__(self, board, parent=None, move=None, depth=0, cost=0):
-        self.board = board
-        self.parent = parent
-        self.move = move
-        self.depth = depth
-        self.cost = cost
+    def display(self):
+        """ Display this Puzzle state as a n*n board """
+        for i in range(self.n):
+            print(self.config[self.n*i : self.n*(i+1)])
 
-    def get_neighbors(self):
-        neighbors = []
-        blank = self.board.index(0)
-        row, column = blank // 3, blank % 3
+    def move_up(self):
+        if self.blank_index < self.n:
+            return None
+        new_config = list(self.config)
+        target = self.blank_index - self.n
+        new_config[self.blank_index], new_config[target] = new_config[target], new_config[self.blank_index]
+        return PuzzleState(tuple(new_config), self.n, parent=self, action="Up", cost=self.cost+1, depth=self.depth+1)
+      
+    def move_down(self):
+        if self.blank_index >= self.n * (self.n - 1):
+            return None
+        new_config = list(self.config)
+        target = self.blank_index + self.n
+        new_config[self.blank_index], new_config[target] = new_config[target], new_config[self.blank_index]
+        return PuzzleState(tuple(new_config), self.n, parent=self, action="Down", cost=self.cost+1, depth=self.depth+1)
+      
+    def move_left(self):
+        if self.blank_index % self.n == 0:
+            return None
+        new_config = list(self.config)
+        target = self.blank_index - 1
+        new_config[self.blank_index], new_config[target] = new_config[target], new_config[self.blank_index]
+        return PuzzleState(tuple(new_config), self.n, parent=self, action="Left", cost=self.cost+1, depth=self.depth+1)
 
-        if row > 0: neighbors.append(('Up', blank, blank - 3))
-        if row < 2: neighbors.append(('Down', blank, blank + 3))
-        if column > 0: neighbors.append(('Left', blank, blank - 1))
-        if column < 2: neighbors.append(('Right', blank, blank + 1))
+    def move_right(self):
+        if (self.blank_index + 1) % self.n == 0:
+            return None
+        new_config = list(self.config)
+        target = self.blank_index + 1
+        new_config[self.blank_index], new_config[target] = new_config[target], new_config[self.blank_index]
+        return PuzzleState(tuple(new_config), self.n, parent=self, action="Right", cost=self.cost+1, depth=self.depth+1)
+      
+    def expand(self):
+        """ Generate the child nodes of this node """
+        if len(self.children) != 0:
+            return self.children
+        
+        # Order: Up, Down, Left, Right
+        possible_moves = [self.move_up(), self.move_down(), self.move_left(), self.move_right()]
+        self.children = [state for state in possible_moves if state is not None]
+        return self.children
 
-        result = []
-        for direction, i, j in neighbors:
-            new_board = list(self.board)
-            new_board[i], new_board[j] = new_board[j], new_board[i]
-            result.append((direction, tuple(new_board)))
-
-        return result
-    
     def __lt__(self, other):
         return self.cost < other.cost
 
-def manhattan_distance(board):
-    total = 0
-    for i, tile in enumerate(board):
-        if tile == 0:
-            continue
-        goal_row, goal_column = tile // 3, tile % 3
-        current_row, current_column = i // 3, i % 3
-        total += abs(goal_row - current_row) + abs(goal_column - current_column)
-    return total
+# Function that Writes to output.txt
+def writeOutput(state, nodes_expanded, max_depth, ram):
+    path = []
+    curr = state
+    while curr.parent is not None:
+        path.append(curr.action)
+        curr = curr.parent
+    path.reverse()
 
-def reconstruct_path(state):
-    moves = []
-    while state.parent is not None:
-        moves.append(state.move)
-        state = state.parent
-    return list(reversed(moves))
+    with open('output.txt', 'w') as f:
+        f.write(f"path_to_goal: {path}\n")
+        f.write(f"cost_of_path: {len(path)}\n")
+        f.write(f"nodes_expanded: {nodes_expanded}\n")
+        f.write(f"search_depth: {state.depth}\n")
+        f.write(f"max_search_depth: {max_depth}\n")
+        f.write(f"running_time: {time.time() - start_time:.8f}\n")
+        f.write(f"max_ram_usage: {ram:.8f}\n")
 
-def bfs(start_board):
-    start_state = PuzzleState(start_board)
-    frontier = deque([start_state])
-    frontier_set = {start_board}
+def bfs_search(initial_state):
+    frontier = deque([initial_state])
+    frontier_set = {initial_state.config}
     explored = set()
     nodes_expanded = 0
     max_depth = 0
 
     while frontier:
         state = frontier.popleft()
-        frontier_set.discard(state.board)
+        frontier_set.remove(state.config)
+        explored.add(state.config)
 
-        if state.board == Goal_State:
-            return state, nodes_expanded, max_depth
+        if test_goal(state):
+            writeOutput(state, nodes_expanded, max_depth, get_ram())
+            return True
 
-        explored.add(state.board)
         nodes_expanded += 1
-
-        for direction, new_board in state.get_neighbors():
-            if new_board not in explored and new_board not in frontier_set:
-                child = PuzzleState(new_board, parent=state, move=direction, depth=state.depth + 1)
+        for child in state.expand():
+            if child.config not in explored and child.config not in frontier_set:
                 frontier.append(child)
-                frontier_set.add(new_board)
+                frontier_set.add(child.config)
                 if child.depth > max_depth:
                     max_depth = child.depth
+    return False
 
-    return None, nodes_expanded, max_depth
-
-def dfs(start_board):
-    start_state = PuzzleState(start_board)
-    frontier = [start_state]
-    frontier_set = {start_board}
+def dfs_search(initial_state):
+    frontier = [initial_state]
+    frontier_set = {initial_state.config}
     explored = set()
     nodes_expanded = 0
     max_depth = 0
 
     while frontier:
         state = frontier.pop()
-        frontier_set.discard(state.board)
+        frontier_set.remove(state.config)
+        explored.add(state.config)
 
-        if state.board == Goal_State:
-            return state, nodes_expanded, max_depth
+        if test_goal(state):
+            writeOutput(state, nodes_expanded, max_depth, get_ram())
+            return True
 
-        explored.add(state.board)
         nodes_expanded += 1
-
-        for direction, new_board in reversed(state.get_neighbors()):
-            if new_board not in explored and new_board not in frontier_set:
-                child = PuzzleState(new_board, parent=state, move=direction, depth=state.depth + 1)
+        # Reverse children to maintain UDLR priority in a LIFO stack
+        for child in reversed(state.expand()):
+            if child.config not in explored and child.config not in frontier_set:
                 frontier.append(child)
-                frontier_set.add(new_board)
+                frontier_set.add(child.config)
                 if child.depth > max_depth:
                     max_depth = child.depth
+    return False
 
-    return None, nodes_expanded, max_depth
-
-def aStar(start_board):
-    start_state = PuzzleState(start_board, cost=manhattan_distance(start_board))
-    frontier = [(start_state.cost, 0, start_state)]
-    frontier_dict = {start_board: start_state.cost}
+def A_star_search(initial_state):
+    counter = 0 # Tie-breaker
+    start_cost = calculate_total_cost(initial_state)
+    frontier = [(start_cost, counter, initial_state)]
+    frontier_dict = {initial_state.config: start_cost}
     explored = set()
     nodes_expanded = 0
     max_depth = 0
-    counter = 0
 
     while frontier:
         _, _, state = heapq.heappop(frontier)
+        if state.config in explored: continue
+        
+        explored.add(state.config)
+        if test_goal(state):
+            writeOutput(state, nodes_expanded, max_depth, get_ram())
+            return True
 
-        if state.board in explored:
-            continue
-
-        if state.board == Goal_State:
-            return state, nodes_expanded, max_depth
-
-        explored.add(state.board)
         nodes_expanded += 1
+        for child in state.expand():
+            if child.config not in explored:
+                f_cost = child.depth + calculate_total_cost(child)
+                if f_cost < frontier_dict.get(child.config, float('inf')):
+                    counter += 1
+                    frontier_dict[child.config] = f_cost
+                    heapq.heappush(frontier, (f_cost, counter, child))
+                    if child.depth > max_depth:
+                        max_depth = child.depth
+    return False
 
-        for direction, new_board in state.get_neighbors():
-            if new_board in explored:
-                continue
+def calculate_total_cost(state):
+    """Total Manhattan distance for all tiles"""
+    dist = 0
+    for idx, value in enumerate(state.config):
+        if value != 0:
+            dist += calculate_manhattan_dist(idx, value, state.n)
+    return dist
 
-            g = state.depth + 1
-            h = manhattan_distance(new_board)
-            f = g + h
+def calculate_manhattan_dist(idx, value, n):
+    target_row, target_col = value // n, value % n
+    curr_row, curr_col = idx // n, idx % n
+    return abs(target_row - curr_row) + abs(target_col - curr_col)
 
-            if f < frontier_dict.get(new_board, float('inf')):
-                counter += 1
-                child = PuzzleState(new_board, parent=state, move=direction, depth=g, cost=f)
-                heapq.heappush(frontier, (f, counter, child))
-                frontier_dict[new_board] = f
-                if child.depth > max_depth:
-                    max_depth = child.depth
+def test_goal(puzzle_state):
+    return puzzle_state.config == tuple(range(puzzle_state.n**2))
 
-    return None, nodes_expanded, max_depth
+def get_ram():
+    # Returns RAM usage in MB
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
 
-def write_output(state, nodes_expanded, max_depth, run_time, ram):
-    path = reconstruct_path(state)
-    with open('output.txt', 'w') as f:
-        f.write(f"path to goal: {path}\n")
-        f.write(f"cost of path: {len(path)}\n")
-        f.write(f"nodes expanded: {nodes_expanded}\n")
-        f.write(f"search depth: {state.depth}\n")
-        f.write(f"max search depth: {max_depth}\n")
-        f.write(f"running time: {run_time:.8f}\n")
-        f.write(f"max ram usage: {ram:.8f}\n")
+# Main Function
+def main():
+    global start_time
+    search_mode = sys.argv[1].lower()
+    begin_state = sys.argv[2].split(",")
+    begin_state = tuple(map(int, begin_state))
+    board_size  = int(math.sqrt(len(begin_state)))
+    hard_state  = PuzzleState(begin_state, board_size)
+    start_time  = time.time()
+    
+    if   search_mode == "bfs": bfs_search(hard_state)
+    elif search_mode == "dfs": dfs_search(hard_state)
+    elif search_mode == "ast": A_star_search(hard_state)
+    else: 
+        print("Enter valid command arguments !")
 
 if __name__ == '__main__':
-    method = sys.argv[1]
-    board = tuple(int(x) for x in sys.argv[2].split(','))
-
-    start_time = time.time()
-    start_ram = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-
-    if method == 'bfs':
-        state, nodes_expanded, max_depth = bfs(board)
-    elif method == 'dfs':
-        state, nodes_expanded, max_depth = dfs(board)
-    elif method == 'ast':
-        state, nodes_expanded, max_depth = aStar(board)
-
-    run_time = time.time() - start_time
-    ram = (resource.getrusage(resource.RUSAGE_SELF).ru_maxrss - start_ram) / (2**20)
-
-    write_output(state, nodes_expanded, max_depth, run_time, ram)
+    main()
