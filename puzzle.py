@@ -1,3 +1,9 @@
+import sys
+import time
+import resource
+from collections import deque
+import heapq
+
 class PuzzleState():
     def __init__(self, board, parent=None, move=None, depth=0, cost=0):
         self.board = board
@@ -8,7 +14,7 @@ class PuzzleState():
 
     def get_neighbors(self):
         neighbors = []
-        blank = board.index(0)
+        blank = self.board.index(0)
         row, column = blank // 3, blank % 3
 
         if row > 0: neighbors.append(('Up', blank, blank - 3))
@@ -18,7 +24,7 @@ class PuzzleState():
 
         result = []
         for direction, i, j in neighbors:
-            new_board = list(board)
+            new_board = list(self.board)
             new_board[i], new_board[j] = new_board[j], new_board[i]
             result.append((direction, tuple(new_board)))
 
