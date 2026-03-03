@@ -4,6 +4,8 @@ import resource
 from collections import deque
 import heapq
 
+Goal_State = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+
 class PuzzleState():
     def __init__(self, board, parent=None, move=None, depth=0, cost=0):
         self.board = board
@@ -62,7 +64,7 @@ def bfs(start_board):
         state = frontier.popleft()
         frontier_set.discard(state.board)
 
-        if state.board == GOAL_STATE:
+        if state.board == Goal_State:
             return state, nodes_expanded, max_depth
 
         explored.add(state.board)
@@ -90,7 +92,7 @@ def dfs(start_board):
         state = frontier.pop()
         frontier_set.discard(state.board)
 
-        if state.board == GOAL_STATE:
+        if state.board == Goal_State:
             return state, nodes_expanded, max_depth
 
         explored.add(state.board)
@@ -121,7 +123,7 @@ def aStar(start_board):
         if state.board in explored:
             continue
 
-        if state.board == GOAL_STATE:
+        if state.board == Goal_State:
             return state, nodes_expanded, max_depth
 
         explored.add(state.board)
