@@ -103,3 +103,42 @@ def dfs(start_board):
                     max_depth = child.depth
 
     return None, nodes_expanded, max_depth
+
+def ast(start_board):
+    start_state = PuzzleState(start_board, cost=manhattan_distance(start_board))
+    frontier = [(start_state.cost, 0, start_state)]
+    frontier_dict = {start_board: start_state.cost}
+    explored = set()
+    nodes_expanded = 0
+    max_depth = 0
+    counter = 0
+
+    while frontier:
+        _, _, state = heapq.heappop(frontier)
+
+        if state.board in explored:
+            continue
+
+        if state.board == GOAL_STATE:
+            return state, nodes_expanded, max_depth
+
+        explored.add(state.board)
+        nodes_expanded += 1
+
+        for direction, new_board in state.get_neighbors():
+            if new_board in explored:
+                continue
+
+            g = state.depth + 1
+            h = manhattan_distance(new_board)
+            f = g + h
+
+            if f < frontier_dict.get(new_board, float('inf')):
+                counter += 1
+                child = PuzzleState(new_board, parent=state, move=direction, depth=g, cost=f)
+                heapq.heappush(frontier, (f, counter, child))
+                frontier_dict[new_board] = f
+                if child.depth > max_depth:
+                    max_depth = child.depth
+
+    return None, nodes_expanded, max_depth
