@@ -6,7 +6,7 @@ COL = "123456789"
 # Each sudoku board is represented as a dictionary with string keys and int values, e.g. my_board['A1'] = 8.
 
 def print_board(board):
-    """Helper function to print board in a square."""
+    # Helper function to print board in a square
     print("-----------------")
     for i in ROW:
         row = ''
@@ -15,7 +15,7 @@ def print_board(board):
         print(row)
 
 def board_to_string(board):
-    """Helper function to convert board dictionary to string for writing."""
+    # Helper function to convert board dictionary to string for writing
     ordered_vals = []
     for r in ROW:
         for c in COL:
@@ -23,7 +23,7 @@ def board_to_string(board):
     return ''.join(ordered_vals)
 
 def get_peers(var):
-    """Return all peers of a variable (same row, col, or box)."""
+    # Return all peers of a variable (same row, col, or box)
     row, col = var[0], var[1]
     peers = set()
     for c in COL:
@@ -44,7 +44,7 @@ PEERS = {ROW[r] + COL[c]: get_peers(ROW[r] + COL[c])
          for r in range(9) for c in range(9)}
 
 def initialize_domains(board):
-    """Initialize domains for all variables with constraint propagation."""
+    # Initialize domains for all variables with constraint propagation
     domains = {}
     for var in board:
         if board[var] == 0:
@@ -58,12 +58,12 @@ def initialize_domains(board):
     return domains
 
 def select_unassigned_variable(board, domains):
-    """MRV heuristic: pick unassigned variable with fewest legal values."""
+    # MRV heuristic: pick unassigned variable with fewest legal values
     unassigned = [v for v in board if board[v] == 0]
     return min(unassigned, key=lambda v: len(domains[v]))
 
 def forward_checking(board, domains, var, value):
-    """Apply forward checking. Returns new domains or None if contradiction."""
+    # Apply forward checking - returns new domains or None if contradiction
     new_domains = {v: set(d) for v, d in domains.items()}
     new_domains[var] = {value}
     for peer in PEERS[var]:
@@ -74,7 +74,7 @@ def forward_checking(board, domains, var, value):
     return new_domains
 
 def backtrack(board, domains):
-    """Recursive backtracking search."""
+    # Recursive backtracking search
     if all(board[v] != 0 for v in board):
         return board
     var = select_unassigned_variable(board, domains)
@@ -90,7 +90,7 @@ def backtrack(board, domains):
     return None
 
 def backtracking(board):
-    """Takes a board and returns solved board."""
+    # Takes a board and returns solved board
     domains = initialize_domains(board)
     result = backtrack(board, domains)
     return result if result is not None else board
