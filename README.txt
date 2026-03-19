@@ -2,7 +2,7 @@
 Sudoku Solver - Results
 =======================
 
-Algorithm: Backtracking with MRV (Minimum Remaining Values) heuristic and forward checking.
+Algorithm: Backtracking with MRV (Minimum Remaining Values) heuristic and forward checking
 
 Boards solved: 400/400
 
