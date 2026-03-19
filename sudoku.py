@@ -3,7 +3,7 @@ import sys
 ROW = "ABCDEFGHI"
 COL = "123456789"
 
-# Each sudoku board is represented as a dictionary with string keys and int values, e.g. my_board['A1'] = 8.
+# Each sudoku board is represented as a dictionary with string keys and int values (e.g. my_board['A1'] = 8)
 
 def print_board(board):
     # Helper function to print board in a square
@@ -98,7 +98,7 @@ def backtracking(board):
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         if len(sys.argv[1]) != 81:
-            print("Input string must be exactly 81 characters long")
+            print("ERROR: Input string must be exactly 81 characters long.")
             exit()
 
         print(sys.argv[1])
