@@ -1,3 +1,7 @@
+# Rachel Papirmeister
+# COMS 4701
+# Coding HW 1
+
 from __future__ import division
 from __future__ import print_function
 

@@ -1,7 +1,1 @@
-path to goal: ['Up', 'Left', 'Left']
-cost of path: 3
-nodes expanded: 10
-search depth: 3
-max search depth: 4
-running time: 0.00010800
-max ram usage: 0.00000000
+483921657967345821251876493548132976729564138136798245372689514814253769695417382
