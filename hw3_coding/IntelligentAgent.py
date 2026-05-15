@@ -27,7 +27,7 @@ class IntelligentAgent(BaseAI):
     def time_up(self):
         return time.process_time() - self.start_time >= TIME_LIMIT
 
-    # ---------- minimax with alpha-beta pruning ----------
+    # minimax with alpha-beta pruning
 
     def maximize(self, grid, alpha, beta, depth):
         """MAX NODE: player picks the best move"""
@@ -61,7 +61,7 @@ class IntelligentAgent(BaseAI):
                 new_grid.setCellValue(cell, tile)
                 value = self.maximize(new_grid, alpha, beta, depth + 1)
 
-                # Weight by tile probability to respect expectiminimax principles
+                # weight by tile probability
                 if tile == 2:
                     value *= 0.9
                 else:
@@ -76,7 +76,7 @@ class IntelligentAgent(BaseAI):
 
         return best
 
-    # ---------- heuristics ----------
+    # heuristics
 
     def evaluate(self, grid):
         return (
