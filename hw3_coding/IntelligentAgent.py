@@ -14,12 +14,12 @@ class IntelligentAgent(BaseAI):
     def getMove(self, grid):
         self.start_time = time.process_time()
         best_move = None
-        best_val = float('-inf')
+        best_value = float('-inf')
 
         for move, new_grid in grid.getAvailableMoves():
-            val = self.minimize(new_grid, float('-inf'), float('inf'), depth=1)
-            if val > best_val:
-                best_val = val
+            value = self.minimize(new_grid, float('-inf'), float('inf'), depth=1)
+            if value > best_value:
+                best_value = value
                 best_move = move
 
         return best_move
@@ -36,8 +36,8 @@ class IntelligentAgent(BaseAI):
 
         best = float('-inf')
         for _, new_grid in grid.getAvailableMoves():
-            val = self.minimize(new_grid, alpha, beta, depth + 1)
-            best = max(best, val)
+            value = self.minimize(new_grid, alpha, beta, depth + 1)
+            best = max(best, value)
             alpha = max(alpha, best)
             if beta <= alpha:
                 break  # beta cutoff
@@ -59,15 +59,15 @@ class IntelligentAgent(BaseAI):
             for cell in cells:
                 new_grid = grid.clone()
                 new_grid.setCellValue(cell, tile)
-                val = self.maximize(new_grid, alpha, beta, depth + 1)
+                value = self.maximize(new_grid, alpha, beta, depth + 1)
 
                 # Weight by tile probability to respect expectiminimax principles
                 if tile == 2:
-                    val *= 0.9
+                    value *= 0.9
                 else:
-                    val *= 0.1
+                    value *= 0.1
 
-                best = min(best, val)
+                best = min(best, value)
                 beta = min(beta, best)
                 if beta <= alpha:
                     break  # alpha cutoff
@@ -130,12 +130,12 @@ class IntelligentAgent(BaseAI):
             for j in range(4):
                 if grid.map[i][j] == 0:
                     continue
-                val = math.log2(grid.map[i][j])
+                value = math.log2(grid.map[i][j])
                 for di, dj in [(0, 1), (1, 0)]:
                     ni, nj = i + di, j + dj
                     if 0 <= ni < 4 and 0 <= nj < 4 and grid.map[ni][nj] != 0:
                         neighbor = math.log2(grid.map[ni][nj])
-                        penalty -= abs(val - neighbor)
+                        penalty -= abs(value - neighbor)
         return penalty
 
     def max_tile_corner(self, grid):
