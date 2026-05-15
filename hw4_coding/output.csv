@@ -1,0 +1,6 @@
+Name, Best Training Score, Testing Score
+KNeighborsClassifier, 0.9300, 0.9250
+LogisticRegression, 0.6067, 0.5650
+DecisionTreeClassifier, 0.9733, 0.9950
+RandomForestClassifier, 0.9333, 0.9400
+AdaBoostClassifier, 0.6133, 0.6300
