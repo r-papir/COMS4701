@@ -120,15 +120,15 @@ if __name__ == "__main__":
 
     models = Classifiers(df)
 
-    print('Classifying with KNN ☺')
+    print('✿ Classifying with KNN ✿')
     models.classifyNearestNeighbors()
-    print('Classifying with Logistic Regression ☺')
+    print('✿ Classifying with Logistic Regression ✿')
     models.classifyLogisticRegression()
-    print('Classifying with Decision Tree ☺')
+    print('✿ Classifying with Decision Tree ✿')
     models.classifyDecisionTree()
-    print('Classifying with Random Forest ☺')
+    print('✿ Classifying with Random Forest ✿')
     models.classifyRandomForest()
-    print('Classifying with AdaBoost ☺')
+    print('✿ Classifying with AdaBoost ✿')
     models.classifyAdaBoost()
 
     with open("output.csv", "w") as f:
