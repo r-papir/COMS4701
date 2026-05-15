@@ -6,6 +6,7 @@ import math
 from BaseAI import BaseAI
 
 TIME_LIMIT = 0.18
+MAX_DEPTH = 4
 
 
 class IntelligentAgent(BaseAI):
@@ -30,7 +31,7 @@ class IntelligentAgent(BaseAI):
 
     def maximize(self, grid, alpha, beta, depth):
         """MAX NODE: player picks the best move"""
-        if self.time_up() or not grid.getAvailableMoves():
+        if self.time_up() or depth >= MAX_DEPTH or not grid.getAvailableMoves():
             return self.evaluate(grid)
 
         best = float('-inf')
@@ -49,7 +50,7 @@ class IntelligentAgent(BaseAI):
         """
         cells = grid.getAvailableCells()
 
-        if self.time_up() or not cells:
+        if self.time_up() or depth >= MAX_DEPTH or not cells:
             return self.evaluate(grid)
 
         best = float('inf')
